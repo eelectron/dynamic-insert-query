@@ -2,142 +2,170 @@ package query;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class Postgres {
-	private String url = "jdbc:postgresql://localhost:5432/postgres";
-	private String user = "postgres";
-	private String password = "postgres";
-	
+import java.io.FileWriter;   // Import the FileWriter class
+import java.io.IOException;  // Import the IOException class to handle errors
+import java.io.BufferedWriter;
+
+public class Postgres{
+	private String url = "jdbc:postgresql://localhost:5432/testdb";
+    private String user = "postgres";
+    private String password = "postgres";
 	private Connection conn;
-	public Postgres(String url, String user, String password) {
+	
+	public Postgres(String url, String user, String password){
 		this.url = url;
 		this.user = user;
 		this.password = password;
 		
-		conn = connect();
+		// connect to db
+		try{
+			conn = connect();
+			System.out.println("Connected to database .");
+		}catch(SQLException ex){
+			System.out.println(ex.getMessage());
+		}catch(ClassNotFoundException ex){
+			System.out.println(ex.getMessage());
+		}
 	}
 	
-	public Connection connect() {
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(url, user, password);
-            System.out.println("Connected to the PostgreSQL server successfully.");
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return conn;
+	/**
+     * Connect to the PostgreSQL database
+     *
+     * @return a Connection object
+     * @throws java.sql.SQLException
+     */
+    public Connection connect() throws SQLException, ClassNotFoundException {
+		Class.forName("org.postgresql.Driver");
+        return DriverManager.getConnection(url, user, password);
     }
 	
-	public boolean createSampleTable(String name) {
-		String sql = "CREATE TABLE " + name + " ("
-				+ "user_id serial PRIMARY KEY,"
-				+ "username VARCHAR ( 50 ) UNIQUE NOT NULL,"
-				+ "password VARCHAR ( 50 ) NOT NULL,"
-				+ "email VARCHAR ( 255 ) UNIQUE NOT NULL,"
-				+ "created_on TIMESTAMP NOT NULL,"
-			    +    "last_login TIMESTAMP" 
-			    + " )";
+	/*
+		Export data of a given table .
+	*/
+	public boolean exportTable(String schemaName, String tableName){
+		String fileName = schemaName + "." + tableName + ".txt";
+		BufferedWriter file = null;
 		
-		try {
+		// get column names
+		String columns = getTableColumns(schemaName, tableName);
+		System.out.println(columns);
+		
+		// get columns for select query
+		String columnsForSelect = getColumnsForSelect(schemaName, tableName);
+		
+		// form insert query
+		String insertQuery = "insert into " + schemaName + "." + tableName + "(" + columns + ")" + " values " + "(";
+		
+		// get all rows from table into resultset
+		String sql = "select " + columnsForSelect + " from " + schemaName + "." + tableName;
+		try{
 			Statement stmt = conn.createStatement();
-			stmt.executeQuery(sql);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
-		}
-		return true;
-	}
-	
-	public boolean insertSampleData() {
-		String sql1 = "INSERT INTO public.accounts\n" + 
-				"(username, \"password\", email, created_on, last_login)\n" + 
-				"VALUES('u1', 'p1', 'e1@gmail.com', current_timestamp, current_timestamp)";
-		String sql2 = "INSERT INTO public.accounts\n" + 
-				"(username, \"password\", email, created_on, last_login)\n" + 
-				"VALUES('u2', 'p2', 'e2@gmail.com', current_timestamp, current_timestamp)";
-		
-		try {
-			Statement stmt = conn.createStatement();
-			//stmt.executeQuery(sql1);
-			stmt.executeQuery(sql2);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
-		}
-		
-		return true;
-	}
-	
-	public boolean exportTable(String schema, String table) {
-		String sql = "SELECT column_name\n" + 
-				"  FROM information_schema.columns\n" + 
-				" WHERE table_schema = '" + schema + "'" + 
-				"   AND table_name   = '" + table + "'";
-		
-		// column names
-		String columns = "", selectColumn = "";
-		Statement stmt = null;
-		ResultSet rs = null;
-		try {
-			stmt = conn.createStatement();	
-			rs = stmt.executeQuery(sql);
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println("Executed query : " + sql);
 			
-			// concate columns
-			while(rs.next()) {
+			file = new BufferedWriter(new FileWriter(fileName));
+			while(rs.next()){
+				// form insert query
+				file.write(insertQuery + rs.getString(1) + ");\n");
+				// write to a file
+			}
+			
+			file.close();
+		}catch(SQLException ex){
+			System.out.println(ex.getMessage());
+		}
+		catch(IOException ex){
+			ex.getMessage();
+		}
+		// loop over each row
+			// create a dynamic insert statement for each row
+		
+			// write in a file
+		
+		return true;
+	}
+	
+	/*
+		Export all tables of given schema 
+	*/
+	public boolean exportSchemaTables(String schemaName){
+		// get a list of all tables present in given schema
+		
+		return true;
+	}
+	
+	/* Get column names of given table
+	*/
+	private String getTableColumns(String schema, String table){
+		// create a list of column
+		String columns = "";
+		String sql = "SELECT column_name "
+						+ "FROM information_schema.columns " 
+						+ "WHERE table_schema = '" + schema + "'" 
+						+ "AND table_name   = '" + table + "' ";
+		
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println("Executed query : " + sql);
+			// concate the columns
+			while(rs.next()){
 				columns += rs.getString("column_name");
 				columns += ", ";
-				
-				selectColumn += rs.getString("column_name");
-				selectColumn += " || ', ' || ";
 			}
-			columns = columns.substring(0,  columns.length() - ", ".length());
-			selectColumn = selectColumn.substring(0, selectColumn.length() - " || ', ' || ".length());
+			columns = columns.substring(0, columns.length() - ", ".length());
 			System.out.println(columns);
-			System.out.println(selectColumn);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
+		}catch(SQLException ex){
+			System.out.println(ex.getMessage());
 		}
-		
-		
-		String insertStatement = "insert into " + schema + "." + table + " ( ";
-		insertStatement += columns;
-		insertStatement += ") ";
-		insertStatement += "values ( ";
-		
-		// select all rows
-		String selectQuery = "select " + selectColumn + " from " + schema + "." + table;
-		
-		String row = "";
-		try {
-			rs = stmt.executeQuery(selectQuery);
-			while(rs.next()) {
-				row = insertStatement + rs.getString(1) + " ); ";
-				System.out.println(row);
+		return columns;
+	}
+	
+	private String getColumnsForSelect(String schema, String table){
+		String columns = "";
+		String sql = "SELECT column_name, data_type "
+						+ "FROM information_schema.columns " 
+						+ "WHERE table_schema = '" + schema + "' "
+						+ "AND table_name   = '" + table + "' ";
+	
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println("Executed query : " + sql);
+			
+			String column_name = null, data_type = null;
+			while(rs.next()){
+				column_name = rs.getString("column_name");
+				data_type = rs.getString("data_type");
+				
+				if(data_type.equalsIgnoreCase("text") || data_type.equalsIgnoreCase("character varying")){		// add single quote around value
+					columns = columns + " ''''" + " || " + column_name + " || " + " '''' ";
+				}
+				else{
+					columns = columns + column_name;
+				}
+				columns += " || ', ' || ";
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+			// remove last delimiter
+			columns = columns.substring(0, columns.length() - " || ', ' || ".length());
+			System.out.println(columns);
+		}catch(SQLException ex){
+			System.out.println(ex.getMessage());
 		}
-		return true;
+		return columns;
 	}
-	
-	public boolean exportSchema(String schema) {
-		return true;
-	}
-	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		String url = "jdbc:postgresql://localhost:5432/postgres";
-		String user = "postgres";
-		String password = "postgres";
-		Postgres pg = new Postgres(url, user, password);
-		//pg.createSampleTable("accounts");
-		//pg.insertSampleData();
-		pg.exportTable("public", "accounts");
-	}
-
+	/**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+		String schema = "bank", table = "customer";
+        Postgres pg = new Postgres("jdbc:postgresql://localhost:5432/testdb", "postgres", "postgres");
+        pg.exportTable(schema, table);
+    }
 }

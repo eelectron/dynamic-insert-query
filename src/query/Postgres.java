@@ -1,5 +1,3 @@
-package query;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,13 +9,24 @@ import java.io.FileWriter;   // Import the FileWriter class
 import java.io.IOException;  // Import the IOException class to handle errors
 import java.io.BufferedWriter;
 
-public class Postgres{
-	private String url = "jdbc:postgresql://localhost:5432/testdb";
-    private String user = "postgres";
-    private String password = "postgres";
+/*
+Purpose : This program exports data from oracle database table , which will be inserted into a postgres database .
+- Exported data is in form of insert query  .
+ex : insert into TBAADM.ACCOUNT_LBL_RELTN_TBL(ACCT_LABEL, ACID, ENTITY_CRE_FLG, DEL_FLG, ACCT_LABEL_RELTN_DESC, LCHG_USER_ID, LCHG_TIME, RCRE_USER_ID, RCRE_TIME, TS_CNT, BANK_ID) 
+values ('ACC', '_117097', 'Y', 'N', 'ACC LABEL CODE', 'C227803', to_timestamp('16/01/2015 14:28:00', 'dd/mm/yyyy hh24:mi:ss'), 'E182143', to_timestamp('16/01/2015 14:26:58', 'dd/mm/yyyy hh24:mi:ss'), 1, '01');
+- All rows will be written in .sql file from where this script is executed .
+
+*/
+public class Oracle{
+	//private String url = "jdbc:postgresql://localhost:5432/testdb";
+	//private String user = "postgres";
+    //private String password = "postgres";
+	private String url = "jdbc:oracle:thin:@10.66.118.22:1525/BMTDB";
+	private String user = "dbread";
+	private String password = "dbread";
 	private Connection conn;
 	
-	public Postgres(String url, String user, String password){
+	public Oracle(String url, String user, String password){
 		this.url = url;
 		this.user = user;
 		this.password = password;
@@ -40,20 +49,21 @@ public class Postgres{
      * @throws java.sql.SQLException
      */
     public Connection connect() throws SQLException, ClassNotFoundException {
-		Class.forName("org.postgresql.Driver");
+		//Class.forName("org.postgresql.Driver");
+		Class.forName("oracle.jdbc.driver.OracleDriver");
         return DriverManager.getConnection(url, user, password);
     }
 	
 	/*
-		Export data of a given table .
+		Export data of a given table and write to a file in current folder .
+		ex: insert into tableName(c1, c2, c3, ...) values (v1, 'v2', to_date('2020/09/04', 'yyyy/mm//dd'))
 	*/
 	public boolean exportTable(String schemaName, String tableName){
-		String fileName = schemaName + "." + tableName + ".txt";
+		String fileName = schemaName + "." + tableName + ".sql";
 		BufferedWriter file = null;
 		
 		// get column names
 		String columns = getTableColumns(schemaName, tableName);
-		System.out.println(columns);
 		
 		// get columns for select query
 		String columnsForSelect = getColumnsForSelect(schemaName, tableName);
@@ -68,11 +78,18 @@ public class Postgres{
 			ResultSet rs = stmt.executeQuery(sql);
 			System.out.println("Executed query : " + sql);
 			
+			// create a new file 
 			file = new BufferedWriter(new FileWriter(fileName));
+			
+			//truncate the table before inserting the rows
+			file.write("truncate " + schemaName + "." + tableName + ";");
+			file.write("\n\n");
+			
+			// set define off
+			
 			while(rs.next()){
 				// form insert query
 				file.write(insertQuery + rs.getString(1) + ");\n");
-				// write to a file
 			}
 			
 			file.close();
@@ -99,27 +116,29 @@ public class Postgres{
 		return true;
 	}
 	
-	/* Get column names of given table
+	/* Get column names of given table in the form "c1, c2, c3, ..."
 	*/
 	private String getTableColumns(String schema, String table){
 		// create a list of column
 		String columns = "";
 		String sql = "SELECT column_name "
-						+ "FROM information_schema.columns " 
-						+ "WHERE table_schema = '" + schema + "'" 
+						+ "FROM all_tab_columns " 
+						+ "WHERE owner = '" + schema + "'" 
 						+ "AND table_name   = '" + table + "' ";
 		
 		try{
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			System.out.println("Executed query : " + sql);
+			
 			// concate the columns
 			while(rs.next()){
 				columns += rs.getString("column_name");
 				columns += ", ";
 			}
+			
+			// remove last ,
 			columns = columns.substring(0, columns.length() - ", ".length());
-			System.out.println(columns);
 		}catch(SQLException ex){
 			System.out.println(ex.getMessage());
 		}
@@ -129,8 +148,8 @@ public class Postgres{
 	private String getColumnsForSelect(String schema, String table){
 		String columns = "";
 		String sql = "SELECT column_name, data_type "
-						+ "FROM information_schema.columns " 
-						+ "WHERE table_schema = '" + schema + "' "
+						+ "FROM all_tab_columns " 
+						+ "WHERE owner = '" + schema + "' "
 						+ "AND table_name   = '" + table + "' ";
 	
 		try{
@@ -143,8 +162,11 @@ public class Postgres{
 				column_name = rs.getString("column_name");
 				data_type = rs.getString("data_type");
 				
-				if(data_type.equalsIgnoreCase("text") || data_type.equalsIgnoreCase("character varying")){		// add single quote around value
+				if(data_type.equalsIgnoreCase("char") || data_type.equalsIgnoreCase("varchar2")){		// add single quote around value if it is a string type
 					columns = columns + " ''''" + " || " + column_name + " || " + " '''' ";
+				}
+				else if(data_type.equalsIgnoreCase("date")){		// date 
+					columns = columns + "'to_timestamp('''" + " || " + "to_char(" + column_name + ", 'dd/mm/yyyy hh24:mi:ss' )" + " || " + "''', ''dd/mm/yyyy hh24:mi:ss'')'";
 				}
 				else{
 					columns = columns + column_name;
@@ -154,7 +176,6 @@ public class Postgres{
 			
 			// remove last delimiter
 			columns = columns.substring(0, columns.length() - " || ', ' || ".length());
-			System.out.println(columns);
 		}catch(SQLException ex){
 			System.out.println(ex.getMessage());
 		}
@@ -164,8 +185,8 @@ public class Postgres{
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-		String schema = "bank", table = "customer";
-        Postgres pg = new Postgres("jdbc:postgresql://localhost:5432/testdb", "postgres", "postgres");
-        pg.exportTable(schema, table);
+		String schema = "TBAADM", table = "ACCOUNT_LBL_RELTN_TBL";
+        Oracle oracle = new Oracle("jdbc:oracle:thin:@10.66.118.22:1525/BMTDB", "dbread", "dbread");
+        oracle.exportTable(schema, table);
     }
 }

@@ -1,3 +1,4 @@
+package query;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -112,7 +113,21 @@ public class Oracle{
 	*/
 	public boolean exportSchemaTables(String schemaName){
 		// get a list of all tables present in given schema
-		
+		String sql = "select table_name from all_tables where owner = '" + schemaName + "'";
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println("Executed query : " + sql);
+			
+			String tableName = null;
+			while(rs.next()) {
+				tableName = rs.getString(1);
+				exportTable(schemaName, tableName);
+				System.out.println("exported table : " + tableName);
+			}
+		}catch(SQLException ex) {
+			System.out.println(ex.getMessage());
+		}
 		return true;
 	}
 	
@@ -185,8 +200,10 @@ public class Oracle{
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-		String schema = "TBAADM", table = "ACCOUNT_LBL_RELTN_TBL";
-        Oracle oracle = new Oracle("jdbc:oracle:thin:@10.66.118.22:1525/BMTDB", "dbread", "dbread");
-        oracle.exportTable(schema, table);
+		String schema = "HR", table = "ACCOUNT_LBL_RELTN_TBL";
+        //Oracle oracle = new Oracle("jdbc:oracle:thin:@10.66.118.22:1525/BMTDB", "dbread", "dbread");
+		Oracle oracle = new Oracle("jdbc:oracle:thin:@localhost:1521/ORCLPDB1.localdomain", "system", "manager");
+        //oracle.exportTable(schema, table);
+        oracle.exportSchemaTables(schema);
     }
 }

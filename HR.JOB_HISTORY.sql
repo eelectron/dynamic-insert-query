@@ -1,0 +1,12 @@
+truncate HR.JOB_HISTORY;
+
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (102, to_timestamp('13/01/2001 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('24/07/2006 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'IT_PROG', 60);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (101, to_timestamp('21/09/1997 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('27/10/2001 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'AC_ACCOUNT', 110);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (101, to_timestamp('28/10/2001 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('15/03/2005 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'AC_MGR', 110);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (201, to_timestamp('17/02/2004 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('19/12/2007 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'MK_REP', 20);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (114, to_timestamp('24/03/2006 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('31/12/2007 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'ST_CLERK', 50);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (122, to_timestamp('01/01/2007 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('31/12/2007 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'ST_CLERK', 50);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (200, to_timestamp('17/09/1995 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('17/06/2001 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'AD_ASST', 90);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (176, to_timestamp('24/03/2006 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('31/12/2006 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'SA_REP', 80);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (176, to_timestamp('01/01/2007 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('31/12/2007 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'SA_MAN', 80);
+insert into HR.JOB_HISTORY(EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID) values (200, to_timestamp('01/07/2002 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), to_timestamp('31/12/2006 00:00:00', 'dd/mm/yyyy hh24:mi:ss'), 'AC_ACCOUNT', 90);

@@ -185,7 +185,7 @@ public class Oracle{
 				data_type = rs.getString("data_type");
 				
 				if(data_type.equalsIgnoreCase("char") || data_type.equalsIgnoreCase("varchar2")){		// add single quote around value if it is a string type
-					columns = columns + " ''''" + " || " + column_name + " || " + " '''' ";
+					columns = columns + " ''''" + " || " + "replace(" + column_name + ", '''', '''''')" + " || " + " '''' ";
 				}
 				else if(data_type.equalsIgnoreCase("date")){		// date 
 					columns = columns + "'to_timestamp('''" + " || " + "to_char(" + column_name + ", 'dd/mm/yyyy hh24:mi:ss' )" + " || " + "''', ''dd/mm/yyyy hh24:mi:ss'')'";
@@ -207,7 +207,7 @@ public class Oracle{
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-		String schema = "HR", table = "ACCOUNT_LBL_RELTN_TBL";
+		String schema = "HR", table = "EMPLOYEES";
         //Oracle oracle = new Oracle("jdbc:oracle:thin:@10.66.118.22:1525/BMTDB", "dbread", "dbread");
 		Oracle oracle = new Oracle("jdbc:oracle:thin:@localhost:1521/ORCLPDB1.localdomain", "system", "manager");
         //oracle.exportTable(schema, table);

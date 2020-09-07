@@ -93,11 +93,18 @@ public class Oracle{
 			file.write("truncate " + schemaName + "." + tableName + ";");
 			file.write("\n\n");
 			
-			// set define off
-			
+			// use string builder
+			// hold row
+			String row = "";
 			while(rs.next()){
 				// form insert query
-				file.write(insertQuery + rs.getString(1) + ");\n");
+				row = rs.getString(1);
+				
+				// handle null values for string and numeric data type 
+				row = row.replace(", ,", ",null ,");
+				row = row.replace(",'',", ",null ,");
+				
+				file.write(insertQuery + row + ");\n");
 			}
 			
 			file.close();

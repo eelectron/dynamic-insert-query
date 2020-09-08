@@ -9,7 +9,11 @@ import java.sql.Statement;
 import java.io.FileWriter;   // Import the FileWriter class
 import java.io.IOException;  // Import the IOException class to handle errors
 import java.io.BufferedWriter;
-
+/*
+ * Author 	: 	Prashant
+ * Date 	:	08-Sep-2020
+ * Email	: 	prashant.2800163@edgeverve.com 
+ * */
 /*
 Purpose : This program exports data from oracle database table , 
 which will be inserted into a postgres database .
@@ -19,10 +23,7 @@ Input : Oracle database connection url,
 		Table name
 Output : Sql file , which has all rows of table in form of insert query .
 
-ex : insert into TBAADM.ACCOUNT_LBL_RELTN_TBL(ACCT_LABEL, ACID, ENTITY_CRE_FLG, DEL_FLG, ACCT_LABEL_RELTN_DESC, LCHG_USER_ID, LCHG_TIME, RCRE_USER_ID, RCRE_TIME, TS_CNT, BANK_ID) 
-values ('ACC', '_117097', 'Y', 'N', 'ACC LABEL CODE', 'C227803', to_timestamp('16/01/2015 14:28:00', 'dd/mm/yyyy hh24:mi:ss'), 'E182143', to_timestamp('16/01/2015 14:26:58', 'dd/mm/yyyy hh24:mi:ss'), 1, '01');
-
-- All rows will be written in .sql file from where this script is executed .
+- All rows will be written in .sql file on computer from where this program is executed .
 
 */
 public class Oracle{

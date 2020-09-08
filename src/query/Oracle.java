@@ -102,8 +102,7 @@ public class Oracle{
 				row = rs.getString(1);
 				
 				// handle null values for string and numeric data type 
-				row = row.replace(", ,", ",null ,");
-				row = row.replace(",'',", ",null ,");
+				row = row.replace(", ,", ", null,");
 				
 				file.write(insertQuery + row + ");\n");
 			}
@@ -177,6 +176,7 @@ public class Oracle{
 	
 	private String getColumnsForSelect(String schema, String table){
 		String columns = "";
+		String concat = " || ', ' || ";
 		String sql = "SELECT column_name, data_type "
 						+ "FROM all_tab_columns " 
 						+ "WHERE owner = '" + schema + "' "
@@ -199,13 +199,13 @@ public class Oracle{
 					columns = columns + "'to_timestamp('''" + " || " + "to_char(" + column_name + ", 'dd/mm/yyyy hh24:mi:ss' )" + " || " + "''', ''dd/mm/yyyy hh24:mi:ss'')'";
 				}
 				else{
-					columns = columns + column_name;
+					columns = columns + "decode(" + column_name + ", NULL, 'null'," + column_name + ")";	// handle null numeric values
 				}
-				columns += " || ', ' || ";
+				columns += concat;
 			}
 			
 			// remove last delimiter
-			columns = columns.substring(0, columns.length() - " || ', ' || ".length());
+			columns = columns.substring(0, columns.length() - concat.length());
 		}catch(SQLException ex){
 			System.out.println(ex.getMessage());
 		}

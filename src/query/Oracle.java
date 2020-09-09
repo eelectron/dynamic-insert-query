@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
+import java.util.Scanner;
 import java.io.FileWriter;   // Import the FileWriter class
 import java.io.IOException;  // Import the IOException class to handle errors
 import java.io.BufferedWriter;
@@ -45,7 +45,7 @@ public class Oracle{
 		// connect to db
 		try{
 			conn = connect();
-			System.out.println("Connected to database .");
+			System.out.println("Connected to database : " + url + " with user = " + user);
 		}catch(SQLException ex){
 			System.out.println(ex.getMessage());
 		}catch(ClassNotFoundException ex){
@@ -128,6 +128,15 @@ public class Oracle{
 		Export all tables of given schema 
 	*/
 	public boolean exportSchemaTables(String schemaName){
+		String input = "n";
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("We are going to export all rows of each table of following schema : " + schemaName);
+		System.out.println("If you want to continue with the process , then please enter y or Y otherwise enter n Or N");
+		input = scanner.nextLine();
+		if(input.equalsIgnoreCase("n") == true) {
+			return false;
+		}
+		
 		// get a list of all tables present in given schema
 		String sql = "select table_name from all_tables where owner = '" + schemaName + "'";
 		try {

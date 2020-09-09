@@ -26,10 +26,12 @@ Output : Sql file , which has all rows of table in form of insert query .
 - All rows will be written in .sql file on computer from where this program is executed .
 
 */
+
+/*
+ * Compile 	: javac Oracle.java
+ * Run		: java -cp .:/path /to/oracle/jdbc/drive Oracle		
+ * */
 public class Oracle{
-	//private String url = "jdbc:postgresql://localhost:5432/testdb";
-	//private String user = "postgres";
-    //private String password = "postgres";
 	private String url = "jdbc:oracle:thin:@10.66.118.22:1525/BMTDB";
 	private String user = "dbread";
 	private String password = "dbread";
